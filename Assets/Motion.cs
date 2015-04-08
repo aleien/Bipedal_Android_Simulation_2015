@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 public class Motion
 {
-	readonly String name = "";
-	readonly Dictionary<String, int> servoAngles = new Dictionary<String, int>();
+	public readonly String name = "";
+	public readonly Dictionary<String, int> servoAngles = new Dictionary<String, int>();
 	
 	readonly List<float> compensationalForce = new List<float>(3);
 	

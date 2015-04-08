@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class Movement
 {
-	readonly String name = "";
+	public readonly String name = "";
 	
 	private List<Motion> motionList = new List<Motion>();
 	private List<float> overallCompensationalForce = new List<float>();
