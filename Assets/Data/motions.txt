@@ -1,1 +1,1 @@
-BendRightLeg,,,50,40
+BendRightLeg,,,,,,,,,,10

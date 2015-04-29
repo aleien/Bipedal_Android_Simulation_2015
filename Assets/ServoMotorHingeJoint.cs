@@ -12,10 +12,9 @@ public class ServoMotorHingeJoint : MonoBehaviour {
 	private float epsilon = 1f;
 	
 
-	int force = 200;
+	int force = 500;
 	JointMotor m = new JointMotor();
 	
-	private Vector3 lastForward;
 	public float currentAngle = 0;
 	
 	void Start () {
@@ -24,63 +23,88 @@ public class ServoMotorHingeJoint : MonoBehaviour {
 	}
 
 	void FixedUpdate () {		
-		if (isActive) {
-			currentAngle = transform.localEulerAngles.y;
-			hingeJoint.breakForce = breakForce;
-		}
-
+		currentAngle = TranslateAngleTo180(transform.localEulerAngles.x);
 	}
 
-	public void Setup(float setAngle, float setSpeed, float setBreakForce) {
-		targetAngle = setAngle;
+	public void Setup(float setAngle, float setSpeed, float setBreakForce, float min, float max) {
+	// Установка значений сервопривода в начале каждого движения
+		targetAngle = Mathf.Clamp(setAngle, min, max);
+		SetLimits(min, max);
 		targetSpeed = setSpeed;
 		breakForce = setBreakForce;
-		m.targetVelocity = setSpeed;
+		m.targetVelocity = targetSpeed;
 		m.force = force;	
-		lastForward = this.transform.forward;
-
+		
 		this.hingeJoint.useMotor = true;
-
+		this.hingeJoint.motor = m;
+	}
+	
+	public void Set(int setAngle, float setSpeed, float setBreakForce) {
+		// Установка значений сервопривода в начале каждого движения
+		targetAngle = setAngle;
+		targetSpeed = SpeedDirection(setAngle, setSpeed);
+		breakForce = setBreakForce;
+		m.targetVelocity = targetSpeed;
+		m.force = force;	
+		
+		this.hingeJoint.useMotor = true;
+		
 		InvokeRepeating ("CheckAngle", 0, .0002f);
 	}
 
 	void CheckAngle() {
 		if (isActive) {
 			if (Mathf.Abs(currentAngle - targetAngle) < epsilon) {	
-				isActive = false;
+				Stop ();
 				m.targetVelocity = 0;		
-				//m.targetVelocity = -1 * Mathf.Abs(m.targetVelocity);
-				//m.force = force;
-				//print (currentAngle);
-				
+				print ("Done! " + name + " " + currentAngle);
+				isActive = false;	
+				CancelInvoke();		
 			} else {
-				//m.targetVelocity = m.targetVelocity;
-				//m.force = force;
-				//print (currentAngle);
+				
 			}
-			m.force = force;		
+			m.force = force;
+				
+		} else if (!isActive) {
+			
 		}
-		/*Vector3 currentForward = transform.forward;
-		float angle = Vector3.Angle(currentForward, lastForward);
-		
-		if (angle > 0.001){ 
-			if (Vector3.Cross(currentForward, lastForward).x < 0) angle = -angle;
-			currentAngle += angle; 
-			lastForward = currentForward; 
-		}*/
-
-		/*if (currentAngle >= targetAngle) {			
-			m.targetVelocity = -1 * Mathf.Abs(m.targetVelocity);
-			m.force = force;
-			//print (currentAngle);
-		} else if (currentAngle <= 0) {
-			m.targetVelocity = Mathf.Abs (m.targetVelocity);
-			m.force = force;
-			//print (currentAngle);
-		}*/
-		
-		//m.targetVelocity = targetSpeed * Mathf.Sign (m.targetVelocity);
-		this.hingeJoint.motor = m;
+		this.hingeJoint.motor = m;	
+	}
+	
+	void Stop() {
+		float limitAngle = Mathf.Round(currentAngle);
+		JointLimits jl = new JointLimits();
+		jl.min = limitAngle - 1;
+		jl.max = 200;
+		this.hingeJoint.limits = jl;
+		this.hingeJoint.useLimits = true;
+	}
+	
+	void SetLimits(float min, float max) {
+		JointLimits jl = new JointLimits();
+		jl.min = min;
+		jl.max = max;
+		this.hingeJoint.limits = jl;
+		this.hingeJoint.useLimits = true;
+	}
+	
+	float TranslateAngleTo180(float angle) {
+		float result = 0f;
+		result = angle < 180 ? angle : angle - 360;
+		return result;
+	}
+	
+	float SpeedDirection(int angle, float speed) {
+		if (TranslateAngleTo180(currentAngle) > angle) 
+			return -Mathf.Abs(speed);
+		if (TranslateAngleTo180(currentAngle) < angle)
+			return Mathf.Abs (speed);
+		else 
+			return Mathf.Abs (speed);
+	}
+	
+	float ConvertAngleTo360 (float angle) {
+		return 0f;
 	}
 
 	void RotateTo(float angle) {

@@ -1,12 +1,9 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ServoManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ServoMotorHingeJointTest.cs">
     <Files>
-      <File FileName="Assets\ServoManager.cs" Line="103" Column="93" />
-      <File FileName="Assets\ServoMotorHingeJoint.cs" Line="32" Column="3" />
-      <File FileName="Assets\Motion.cs" Line="7" Column="41" />
-      <File FileName="Assets\Movement.cs" Line="1" Column="1" />
-      <File FileName="Assets\Data\motions.txt" Line="1" Column="1" />
+      <File FileName="Assets\ServoMotorConfigurable.cs" Line="40" Column="60" />
+      <File FileName="Assets\ServoMotorHingeJointTest.cs" Line="40" Column="3" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

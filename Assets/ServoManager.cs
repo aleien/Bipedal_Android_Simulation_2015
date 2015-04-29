@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -15,42 +16,57 @@ public class ServoManager : MonoBehaviour {
 	public Text targetSpeedText;
 	public Text breakForceText;
 	
-	private int basicSpeed = 10;
+	private int basicSpeed = 30;
 	private int basicBreakForce = 100;
 
 	private GameObject[] servoArray;
-	private string fileName = @"Assets\Data\motions.txt";
+	private string fileMotions = @"Assets\Data\motions.txt";
+	private string fileServoLimits = @"Assets\Data\servoLimits.txt";
 	private static int clickCounter = 0;
 	
 	private List<Motion> motionsList = new List<Motion>();
+	private List<List<int>> limitsList = new List<List<int>>();
 
 	void Start () {
-		servoArray = GameObject.FindGameObjectsWithTag("Joint");
+		servoArray = GameObject.FindGameObjectsWithTag("Joint").OrderBy(go => go.name).ToArray();
 		
-		if (File.Exists(fileName)) {
-			motionsList = CreateMotions(ReadFromFile(fileName));			
+		if (File.Exists(fileMotions)) {
+			motionsList = CreateMotions(ReadFromFile(fileMotions));			
+		} else {
+			print ("File doesn't exist");
+			
+		}
+		
+		if (File.Exists(fileServoLimits)) {
+			List<string> stringsServoLimits = ReadFromFile (fileServoLimits);	
+			foreach (string s in stringsServoLimits) {
+				string[] tmpStringArray = s.Split(' ');
+				List<int> li = new List<int>();
+				for (int i = 0; i < tmpStringArray.Length; i++) {
+					li.Add(int.Parse(tmpStringArray[i]));
+				}
+				
+				limitsList.Add (li);
+			}
+					
 		} else {
 			print ("File doesn't exist");
 		}
 		
 		
+		int j = 0;
 		foreach (GameObject g in servoArray) {
-			g.GetComponent<ServoMotorHingeJoint>().Setup(0, 0, 100);
-			g.GetComponent<ServoMotorHingeJoint>().isActive = true;
-
-			//UpdateParameters(g);
+			int[] servoLimits = limitsList[j].ToArray();
+			g.GetComponent<ServoMotorHingeJoint>().Setup(0, 0, 100, servoLimits[0], servoLimits[1]);
+			j++;
 		}
 	}	
-
+	
 	void FixedUpdate () {
 		foreach (GameObject g in servoArray) 	{
 			//UpdateParameters (g);	
 		}			
 			
-		//angleText.text = servoArray[0].GetComponent<ServoMotorHingeJoint>().currentAngle.ToString();
-		//targetAngleText.text = servoArray[0].GetComponent<ServoMotorHingeJoint>().targetAngle.ToString();
-		//targetSpeedText.text = servoArray[0].GetComponent<ServoMotorHingeJoint>().targetSpeed.ToString();
-		//breakForceText.text = servoArray[0].GetComponent<ServoMotorHingeJoint>().hingeJoint.breakForce.ToString();
 	}
 
 	void UpdateParameters(GameObject g) {
@@ -78,7 +94,7 @@ public class ServoManager : MonoBehaviour {
 				if (split[i] != "")	
 					array.Add(int.Parse(split[i]));
 				else 
-					array.Add (-1);
+					array.Add (-361);
 					
 
 			}
@@ -96,13 +112,17 @@ public class ServoManager : MonoBehaviour {
 		print ("ClickCounter: " + clickCounter.ToString("00"));		
 		foreach (GameObject g in servoArray) {	
 			if (clickCounter < motionsList.Count) {
-				int tryGetAngle = -1; 
+				int tryGetAngle = 0; 
 				Dictionary<string, int> t = motionsList[clickCounter].servoAngles;
-				motionsList[clickCounter].servoAngles.TryGetValue(g.name.Substring(g.name.Length - 2), out tryGetAngle);
-				if (tryGetAngle > 0)
-					g.GetComponent<ServoMotorHingeJoint>().Setup(tryGetAngle, basicSpeed, basicBreakForce);
-				
+				if (motionsList[clickCounter].servoAngles.TryGetValue(g.name.Substring(g.name.Length - 2), out tryGetAngle)) {
+					if (tryGetAngle != -361) {
+						g.GetComponent<ServoMotorHingeJoint>().Set(tryGetAngle, basicSpeed, basicBreakForce);
+						g.GetComponent<ServoMotorHingeJoint>().isActive = true;
+					}
+					
+				}			
 			}
+			
 			
 		}
 
